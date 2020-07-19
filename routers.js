@@ -21,7 +21,8 @@ async function insertDB(){
 
 router.get('/', (req, res) => {
     //You need to redirect to the static site here
-
+    
+  
   return res.send('GET HTTP method');
 });
 
@@ -30,10 +31,40 @@ router.get('/:surl', (req, res) => {
     //localhost:3000/YinGTg
     // /localhost:3000/LyefhE
     //Request for original url
-    console.log(req.originalUrl);
+    
+    
+    let path=req.originalUrl;
+    path=path.slice(1);
+    let sql = 'select surl, lurl from urls';
+    let lurl='';
+    console.log(path)
+    
+    var prom = new Promise((res,rej)=>{
+      db.all(sql, [], (err, rows) => {
+        if (err) {
+          throw err;
+        }
+        console.log('starting search');
+        rows.forEach((row) => {
+          if (path.localeCompare(row.surl) == 0) {
+            lurl = row.lurl;
+          }
+        });
+        console.log('search completed');
+        console.log('LURL: ' + lurl);
+        res(lurl);
+      });
+    }).then((lurl) => {
+      if(lurl.length!=0){
+        return res.status(301).redirect(lurl);
+      }else{
+        return res.status(400).json("The short url doesn't exists in our system.");
+      }
+    })
+    
+}
 
-  return res.send('GET with short URL');
-});
+)
 
 
 router.post('/', (req, res) => {
