@@ -9,7 +9,7 @@ app.use(express.urlencoded()); // to support URL-encoded bodies
 app.use('/',router)
 app.use(cors());
 app.listen(process.env.PORT || 3000, () =>
-  console.log(`Example app listening on port ${process.env.PORT || 3000}`),
+  console.log(`API running on port ${process.env.PORT || 3000}`),
 );
 
-
+// https://stark-cove-29174.herokuapp.com/

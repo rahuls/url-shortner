@@ -22,8 +22,7 @@ function setHttp(link) {
 router.get('/', (req, res) => {
     //You need to redirect to the static site here
     
-  
-  return res.send('Redirecting to ');
+    return res.status(301).redirect('https://rahuls.github.io/app');
 });
 
 
