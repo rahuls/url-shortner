@@ -5,11 +5,11 @@ import sqlite3 from  'sqlite3';
 const app = express();
 const router = express.Router();
 
-async function insertDB(){
-    let key= randomstring.generate({
-        length: 6,
-        charset: 'alphanumeric'
-    })
+function setHttp(link) {
+  if (link.search(/^http[s]?\:\/\//) == -1) {
+      link = 'http://' + link;
+  }
+  return link;
 }
  let db=new sqlite3.Database('./urls.db',(err) => {
      if(err){
@@ -23,7 +23,7 @@ router.get('/', (req, res) => {
     //You need to redirect to the static site here
     
   
-  return res.send('GET HTTP method');
+  return res.send('Redirecting to ');
 });
 
 
@@ -56,7 +56,7 @@ router.get('/:surl', (req, res) => {
       });
     }).then((lurl) => {
       if(lurl.length!=0){
-        return res.status(301).redirect(lurl);
+        return res.status(301).redirect(setHttp(lurl));
       }else{
         return res.status(400).json("The short url doesn't exists in our system.");
       }
@@ -95,7 +95,7 @@ router.post('/', (req, res) => {
         //   });
         let key = randomstring.generate({
             length: 6,
-            charset: 'alphanumeric'
+            charset: 'alphabetic'
         });
         
         // sql=`INSERT INTO urls(surl,lurl) VALUES(${key},${lurl})`;
@@ -104,8 +104,14 @@ router.post('/', (req, res) => {
         db.run(sql)
         console.log('Insert succesful');
     }
-
-  return res.send(`Your short url is at localhost:3000/${surl}`);
+    res.set({
+      'Access-Control-Allow-Origin': ['*'],
+    'Access-Control-Allow-Methods': 'GET,POST'
+    
+ 
+    });
+  return res.json({surl: surl});
+  //return res.send(`Your short url is at localhost:3000/${surl}`);
 });
 
 
