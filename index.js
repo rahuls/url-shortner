@@ -2,19 +2,11 @@ import express from 'express';
 import 'dotenv/config.js';
 
 const app = express();
-const router = express.Router();
- 
-app.get('/', (req, res) => {
-    //You need to redirect to the static site here
-  return res.send('Received a GET HTTP method');
-});
- 
-app.post('/', (req, res) => {
-    // Take the parameter and generate a short url
-    let surl = req.body.surl;
-    console.log(surl);
-  return res.send('Received a POST HTTP method');
-});
+import router from './routers.js'
+app.use(express.json());       // to support JSON-encoded bodies
+app.use(express.urlencoded()); // to support URL-encoded bodies
+
+app.use('/',router)
  
 app.listen(3000, () =>
   console.log(`Example app listening on port 3000!`),
