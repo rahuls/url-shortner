@@ -5,19 +5,19 @@ import sqlite3 from  'sqlite3';
 const app = express();
 const router = express.Router();
 
-function setHttp(link) {
+function setHttp(link){
   if (link.search(/^http[s]?\:\/\//) == -1) {
       link = 'http://' + link;
   }
   return link;
 }
- let db=new sqlite3.Database('./urls.db',(err) => {
+
+let db=new sqlite3.Database('./urls.db',(err) => {
      if(err){
         console.log('Error connecting to DB');
      }
      console.log('Connected to database');
- });
-
+});
 
 router.get('/', (req, res) => {
     //You need to redirect to the static site here
@@ -34,83 +34,69 @@ router.get('/:surl', (req, res) => {
     
     let path=req.originalUrl;
     path=path.slice(1);
-    let sql = 'select surl, lurl from urls';
-    let lurl='';
-    console.log(path)
     
-    var prom = new Promise((res,rej)=>{
-      db.all(sql, [], (err, rows) => {
-        if (err) {
-          throw err;
-        }
-        console.log('starting search');
-        rows.forEach((row) => {
-          if (path.localeCompare(row.surl) == 0) {
-            lurl = row.lurl;
-          }
-        });
-        console.log('search completed');
-        console.log('LURL: ' + lurl);
-        res(lurl);
-      });
-    }).then((lurl) => {
-      if(lurl.length!=0){
-        return res.status(301).redirect(setHttp(lurl));
+    let sql = 'select lurl from urls where surl = ?';
+    let lurl='';
+    db.get(sql,[path],(err,row) => {
+      if(err){
+        return console.error(err.message);
+      }
+      if(row){
+        return res.status(301).redirect(setHttp(row.lurl));
       }else{
         return res.status(400).json("The short url doesn't exists in our system.");
       }
-    })
-    
-}
-
-)
+    });
+    // db.all(sql, [], (err, rows) => {
+    //   if (err) {
+    //     throw err;
+    //   }
+    //   console.log('starting search');
+    //   rows.forEach((row) => {
+    //     if (path.localeCompare(row.surl) == 0) {
+    //       lurl = row.lurl;
+    //     }
+    //   });
+    //   console.log('search completed');
+    //   console.log('LURL: ' + lurl);
+    //   if(lurl.length!=0){
+    //     return res.status(301).redirect(setHttp(lurl));
+    //   }else{
+    //     return res.status(400).json("The short url doesn't exists in our system.");
+    //   }
+    // });
+});
 
 
 router.post('/', (req, res) => {
+    console.log(req.body);
     let lurl = req.body.lurl;
-    // Take the parameter and generate a short url
-    //creating is done over here
     let surl='';
-    let sql = 'select surl, lurl from urls';
-    db.all(sql, [], (err, rows) => {
-        if (err) {
-          throw err;
-        }
-        rows.forEach((row) => {
-          if(row.lurl === lurl){
-              surl=row.surl;
-          }
-        });
-
-      });
-    if(surl !== ''){
-        //return the found url if not create it
-        console.log('Found in db');
-
-    }else{
-        // let surl = randomstring.generate({
-        //     length: 8,
-        //     charset: 'alphabetic'
-        //   });
-        let key = randomstring.generate({
+    let sql = 'select surl from urls where lurl = ?';
+    db.get(sql,[lurl],(err,row) => {
+      if(err){
+        console.log(err.message);
+      }
+      if(row){
+        return res.json({surl: row.surl});
+      }else{
+          let key = randomstring.generate({
             length: 6,
             charset: 'alphabetic'
         });
         
-        // sql=`INSERT INTO urls(surl,lurl) VALUES(${key},${lurl})`;
         sql = "INSERT INTO urls(surl,lurl) VALUES('"+key+"','"+lurl+"')";
         surl=key;
+        console.log(surl);
+        
         db.run(sql)
         console.log('Insert succesful');
-    }
-    res.set({
-      'Access-Control-Allow-Origin': ['*'],
-    'Access-Control-Allow-Methods': 'GET,POST'
+        
+        return res.json({surl: surl});
+      }
+      
     
- 
     });
-  return res.json({surl: surl});
-  //return res.send(`Your short url is at localhost:3000/${surl}`);
 });
 
 
