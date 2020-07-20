@@ -17,6 +17,4 @@ app.listen(process.env.PORT || 3000, () =>
   console.log(`API running on port ${process.env.PORT || 3000}`),
 );
 
-// https://stark-cove-29174.herokuapp.com/
-
-//
+// End Point location:  https://stark-cove-29174.herokuapp.com/

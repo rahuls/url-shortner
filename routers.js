@@ -1,8 +1,7 @@
 import express from 'express';
 import 'dotenv/config.js';
-import randomstring from 'randomstring';
-import sqlite3 from  'sqlite3';
-const app = express();
+import randomstring from 'randomstring'; //generating a random string
+import sqlite3 from  'sqlite3'; 
 const router = express.Router();
 
 function setHttp(link){
@@ -12,6 +11,7 @@ function setHttp(link){
   return link;
 }
 
+//Connecting to database
 let db=new sqlite3.Database('./urls.db',(err) => {
      if(err){
         console.log('Error connecting to DB');
@@ -20,18 +20,13 @@ let db=new sqlite3.Database('./urls.db',(err) => {
 });
 
 router.get('/', (req, res) => {
-    //You need to redirect to the static site here
-    
+    //Redirect to the app if user tries to reach the endpoint
     return res.status(301).redirect('https://rahuls.github.io/app');
 });
 
 
 router.get('/:surl', (req, res) => {
-    //localhost:3000/YinGTg
-    // /localhost:3000/LyefhE
-    //Request for original url
-    
-    
+    //Get the long URL for the short URL
     let path=req.originalUrl;
     path=path.slice(1);
     
@@ -47,24 +42,6 @@ router.get('/:surl', (req, res) => {
         return res.status(400).json("The short url doesn't exists in our system.");
       }
     });
-    // db.all(sql, [], (err, rows) => {
-    //   if (err) {
-    //     throw err;
-    //   }
-    //   console.log('starting search');
-    //   rows.forEach((row) => {
-    //     if (path.localeCompare(row.surl) == 0) {
-    //       lurl = row.lurl;
-    //     }
-    //   });
-    //   console.log('search completed');
-    //   console.log('LURL: ' + lurl);
-    //   if(lurl.length!=0){
-    //     return res.status(301).redirect(setHttp(lurl));
-    //   }else{
-    //     return res.status(400).json("The short url doesn't exists in our system.");
-    //   }
-    // });
 });
 
 
@@ -78,29 +55,27 @@ router.post('/', (req, res) => {
         console.log(err.message);
       }
       if(row){
-        return res.json({surl: row.surl});
+          return res.json({surl: row.surl});
       }else{
-          let key = randomstring.generate({
+            let key = randomstring.generate({
             length: 6,
             charset: 'alphabetic'
-        });
+              });
         
-        sql = "INSERT INTO urls(surl,lurl) VALUES('"+key+"','"+lurl+"')";
-        surl=key;
-        console.log(surl);
-        
-        db.run(sql)
-        console.log('Insert succesful');
-        
-        return res.json({surl: surl});
+            sql = "INSERT INTO urls(surl,lurl) VALUES('"+key+"','"+lurl+"')";
+            surl=key;
+            console.log(surl);
+            
+            db.run(sql)
+            console.log('Insert succesful');
+            
+            return res.json({surl: surl});
       }
-      
-    
     });
 });
 
-
 router.get('*',(req,res) => {
+    //If user tries to reach an unknown path 
     return res.send('Invalid URL');
 })
 
