@@ -31,7 +31,6 @@ router.get('/:surl', (req, res) => {
     path=path.slice(1);
     
     let sql = 'select lurl from urls where surl = ?';
-    let lurl='';
     db.get(sql,[path],(err,row) => {
       if(err){
         return console.error(err.message);
